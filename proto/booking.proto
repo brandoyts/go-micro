@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package booking;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "proto-gen/bookingpb";
+
+service BookingService {
+  rpc GetBooking(GetBookingRequest) returns (GetBookingResponse);
+  rpc CreateBooking(CreateBookingRequest) returns (CreateBookingResponse);
+  rpc GetBookingsByUserUuid(GetBookingsByUserUuidRequest) returns (GetBookingsByUserUuidResponse);
+  rpc UpdateBooking(UpdateBookingRequest) returns (UpdateBookingResponse);
+}
+
+message Booking {
+  string uuid = 1;
+  string user_uuid = 2;
+  google.protobuf.Timestamp schedule = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+}
+
+
+message GetBookingRequest {
+  string uuid = 1;
+}
+
+
+message GetBookingResponse {
+  Booking booking = 1;
+}
+
+message CreateBookingRequest {
+  string user_uuid = 1;
+  google.protobuf.Timestamp schedule = 2;
+}
+
+message CreateBookingResponse {
+  Booking booking = 1;
+}
+
+message GetBookingsByUserUuidRequest {
+  string user_uuid = 1;
+}
+
+message GetBookingsByUserUuidResponse {
+  repeated Booking bookings = 1;
+}
+
+message UpdateBookingRequest {
+  string uuid = 1;
+  google.protobuf.Timestamp schedule = 2;
+}
+
+message UpdateBookingResponse {
+  Booking booking = 1;
+}

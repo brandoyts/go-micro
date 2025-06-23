@@ -1,0 +1,89 @@
+services:
+  userDB:
+    container_name: micro_user_db
+    image: mysql:latest
+    restart: always
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-psecret"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: users
+
+  user:
+    container_name: micro_user_service
+    build:
+      context: .
+      dockerfile: user/Dockerfile
+    ports:
+      - 50051:50051
+    depends_on:
+      userDB:
+        condition: service_healthy
+    restart: always
+    environment:
+      USER_DB_DSN: root:secret@tcp(userDB:3306)/users?charset=utf8mb4&parseTime=True&loc=Local
+
+  auth:
+    container_name: micro_auth_service
+    build:
+      context: .
+      dockerfile: auth/Dockerfile
+    ports:
+      - 50055:50055
+    depends_on:
+      - user
+    restart: always
+    environment:
+      USER_SERVICE_ADDRESS: user:50051
+
+  bookingDB:
+    container_name: micro_booking_db
+    image: mysql:latest
+    restart: always
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-psecret"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    ports:
+      - 3307:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: bookings
+
+  booking:
+    container_name: micro_booking_service
+    build:
+      context: .
+      dockerfile: booking/Dockerfile
+    ports:
+      - 50052:50052
+    depends_on:
+      bookingDB:
+        condition: service_healthy
+    restart: always
+    environment:
+      BOOKING_DB_DSN: root:secret@tcp(bookingDB:3306)/bookings?charset=utf8mb4&parseTime=True&loc=Local
+
+  api-gateway:
+    container_name: micro_api_gateway_service
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    ports:
+      - 8000:8000
+    depends_on:
+      - userDB
+      - user
+      - bookingDB
+      - booking
+    restart: always
+    environment:
+      USER_DSN: user:50051
+      BOOKING_DSN: booking:50052
+      AUTH_DSN: auth:50055
