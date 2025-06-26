@@ -3,6 +3,7 @@ package interfaces
 import (
 	"context"
 	"microservices/auth/internal/application"
+	"microservices/auth/internal/shared"
 	"microservices/pkg/proto-gen/authpb"
 
 	"google.golang.org/grpc/codes"
@@ -27,7 +28,7 @@ func (h *AuthHandler) Login(ctx context.Context, req *authpb.LoginRequest) (*aut
 	}
 
 	return &authpb.LoginResponse{
-		TokenType:    "Bearer",
+		TokenType:    shared.Bearer,
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}, nil
